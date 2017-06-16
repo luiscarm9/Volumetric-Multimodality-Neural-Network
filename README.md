@@ -66,6 +66,9 @@ In order to train your model update the parameters in **main.py** to select the 
 python main.py -test
 ```
 The output will be saved on the */Results* folder.
+
+Some of the results with the best model trained:
+![](/Results.png) 
 ## Deployment
  
 For additional information of how basic VNet architecture works look at this paper [VNet](https://arxiv.org/pdf/1606.04797v1.pdf) and the following tutorial [VNet tutorial](https://sagarhukkire.github.io/Vnet-Cafffe_Guide/)
