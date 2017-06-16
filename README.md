@@ -11,12 +11,14 @@ These instructions will get you a copy of the project up and running on your loc
 Programs and packages required to run our network:
 
 ```
-SimpleITK ([link](https://itk.org/Wiki/SimpleITK/GettingStarted#Build_It_Yourself) )
+SimpleITK 
 Python2
-Caffe-3D ([Caffe3D repo](https://github.com/faustomilletari/3D-Caffe))
+Caffe-3D
 CUDA with CudNN
 ```
-
+[SimpleITK installation](https://itk.org/Wiki/SimpleITK/GettingStarted#Build_It_Yourself) 
+[Caffe-3D repo](https://github.com/faustomilletari/3D-Caffe)
+ 
 ### Training Process
 
 The dataset mut be in a medical image format (.nii, .mhd, etc..)
@@ -86,6 +88,6 @@ This project is licensed under the MIT License
 * We thank V-Net and 3d-Caffe implementation by @faustomilletari. 
 
 ## Authors
-* Silvana Castillo @SilvanaX
+* Silvana Castillo @SilvanaC
 * Laura Daza @lauradaza
 * Luis Rivera @luiscarm9
