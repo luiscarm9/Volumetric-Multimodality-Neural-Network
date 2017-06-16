@@ -17,6 +17,7 @@ Caffe-3D
 CUDA with cuDNN
 ```
 [SimpleITK installation](https://itk.org/Wiki/SimpleITK/GettingStarted#Build_It_Yourself) 
+
 [Caffe-3D repo](https://github.com/faustomilletari/3D-Caffe)
  
 ### Training Process
@@ -56,6 +57,7 @@ To run the network first set the training parameters in **main.py**. After setti
 python main.py -train
 ```
 The trained models will be saved on */Models/MRI_cinque_snapshots*
+
 **Note:** This process uses a lot of memory we recommend using a GPU. For that you must have installed and set up cuDNN.
 ## Test Process
  
