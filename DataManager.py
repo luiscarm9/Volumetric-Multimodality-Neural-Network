@@ -26,16 +26,14 @@ class DataManager(object):
         self.resultsDir=resultsDir
 
     def createImageFileList(self):
-        #pdb.set_trace();
         self.fileList = [f for f in listdir(self.srcFolder) if isfile(join(self.srcFolder, f)) and 'segmentation' not in f and 'raw' not in f]
         print 'FILE LIST: ' + str(self.fileList)
 
 
     def createGTFileList(self):
-        #pdb.set_trace();
         self.gtList=list()
-        for f in range(1,15):
-            self.gtList.append(join(str(f)+'_segmentation'+'.nii'))
+        for f in range(1,int(self.params['TrainSize'])+1):
+            self.gtList.append(join(str(f)+'_segmentation'+self.params['format']))
 
 
     def loadImages(self):
@@ -56,14 +54,8 @@ class DataManager(object):
 
 
     def loadGT(self):
-        #pdb.set_trace()
         self.sitkGT=dict()
-
         for f in self.gtList:
-	    #logo = sitk.ReadImage(join(self.srcFolder, f))
-	    #x = sitk.GetArrayFromImage(logo)
-	    #x.max()
-	    #pdb.set_trace()
             self.sitkGT[f]=sitk.Cast(sitk.ReadImage(join(self.srcFolder, f))>0.5,sitk.sitkFloat32)
 
 
@@ -71,7 +63,7 @@ class DataManager(object):
     def loadTrainingData(self):
         self.createImageFileList()
         self.loadImages()
-	self.createGTFileList()
+        self.createGTFileList()
         self.loadGT()
 
 
@@ -194,8 +186,6 @@ class DataManager(object):
         thfilter.SetLowerThreshold(0.6)
         toWrite = thfilter.Execute(toWrite)
 
-        #connected component analysis (better safe than sorry)
-
         cc = sitk.ConnectedComponentImageFilter()
         toWritecc = cc.Execute(sitk.Cast(toWrite,sitk.sitkUInt8))
 
@@ -214,6 +204,7 @@ class DataManager(object):
 
         writer = sitk.ImageFileWriter()
         filename, ext = splitext(key)
-        #print join(self.resultsDir, filename + '_result' + ext)
+        pdb.set_trace()
+        print join(self.resultsDir, filename + '_result' + ext)
         writer.SetFileName(join(self.resultsDir, filename + '_result' + ext))
         writer.Execute(toWrite)

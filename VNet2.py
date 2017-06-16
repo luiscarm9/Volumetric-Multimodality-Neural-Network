@@ -32,16 +32,16 @@ class VNet(object):
 
         nr_iter_dataAug = nr_iter*batchsize
         np.random.seed()
-        whichDataList = np.random.randint(1,15, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
-        whichDataForMatchingList = np.random.randint(1,15, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
+        whichDataList = np.random.randint(1,int(self.params['ModelParams']['TrainSize'])+1, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
+        whichDataForMatchingList = np.random.randint(1,int(self.params['ModelParams']['TrainSize'])+1, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
 
         for p,whichDataForMatching in zip(whichDataList,whichDataForMatchingList):
 
             currGtKey = str(p) + '_segmentation' + '.nii'
-            currImgKey1 = str(p) + '_Flair' + '.nii'
-            currImgKey2 = str(p) + '_T1' + '.nii'
-            currImgKey3 = str(p) + '_DWI' + '.nii'
-            currImgKey4 = str(p) + '_T2' + '.nii'
+            currImgKey1 = str(p) +'_'+ self.params['ModelParams']['mod1'] + self.params['ModelParams']['format']
+            currImgKey2 = str(p) +'_'+ self.params['ModelParams']['mod2'] + self.params['ModelParams']['format']
+            currImgKey3 = str(p) +'_'+ self.params['ModelParams']['mod3'] + self.params['ModelParams']['format']
+            currImgKey4 = str(p) +'_'+ self.params['ModelParams']['mod4'] + self.params['ModelParams']['format']
 
             defImg1= numpyImages[currImgKey1]
             defImg2= numpyImages[currImgKey2]
@@ -57,15 +57,7 @@ class VNet(object):
             defImg4 = utilities.hist_match(defImg4, numpyImages[ImgKeyMatching])
 
             if(np.random.rand(1)[0]>0.5):
-
-                #ImgGeneral = np.concatenate((defImg1,defImg2,defImg3,defImg4), axis = 2)
-                #print "Prueba s1 " + str(ImgGeneral.shape)
-                #ImgGeneral, defLab = utilities.produceRandomlyDeformedImage(ImgGeneral, defLab,self.params['ModelParams']['numcontrolpoints'],self.params['ModelParams']['sigma'])
                 defImg1,defImg2,defImg3,defImg4,defLab = utilities.produceRandomlyDeformedImage(defImg1,defImg2,defImg3,defImg4,defLab,self.params['ModelParams']['numcontrolpoints'],self.params['ModelParams']['sigma'])
-
-                #[defImg1,defImg2,defImg3,defImg4] = np.split(ImgGeneral,4,axis=2)
-                #[defLab,ignorar1,ignorar2,ignorar3] = np.split(defLab,4,axis=2)
-
 
             weightData = np.zeros_like(defLab,dtype=float)
             weightData[defLab == 1] = np.prod(defLab.shape) / np.sum((defLab==1).astype(dtype=np.float32))
@@ -108,15 +100,9 @@ class VNet(object):
             train_loss[it] = solver.net.blobs['loss'].data
 
             if (np.mod(it, 1) == 0):
-
-                #plt.clf()
-                #plt.plot(range(0, it), train_loss[0:it])
-                #plt.pause(0.00000001)
                 with open('loss.txt', 'a') as t:
                     t.write(str(train_loss[it])+ "\n")
-
                 t.close()
-            #matplotlib.pyplot.show()
 
 
     def train(self):
@@ -132,26 +118,19 @@ class VNet(object):
         howManyImages = len(self.dataManagerTrain.sitkImages)
         howManyGT = len(self.dataManagerTrain.sitkGT)
 
-        #assert 4*howManyGT == howManyImages #AHORA TENEMOS 110 LABELS 440 DATA
 
         print "The dataset has shape: data - " + str(howManyImages) + ". labels - " + str(howManyGT)
 
         test_interval = 10000
-        # Write a temporary solver text file because pycaffe is stupid
         with open("solver.prototxt", 'w') as f:
             f.write("net: \"" + self.params['ModelParams']['prototxtTrain'] + "\" \n")
             f.write("base_lr: " + str(self.params['ModelParams']['baseLR']) + " \n")
             f.write("momentum: 0.90 \n")
             f.write("weight_decay: 0.0005 \n")
             f.write("lr_policy: \"fixed\" \n")
-            #f.write("stepsize: 2000 \n")
-            #f.write("gamma: 0.1 \n")
             f.write("display: 1 \n")
-            f.write("snapshot: 1000 \n")
+            f.write("snapshot: 10 \n")
             f.write("snapshot_prefix: \"" + self.params['ModelParams']['dirSnapshots'] + "\" \n")
-            #f.write("test_iter: 3 \n")
-            #f.write("test_interval: " + str(test_interval) + "\n")
-
         f.close()
         solver = caffe.SGDSolver("solver.prototxt")
         os.remove("solver.prototxt")
@@ -165,8 +144,6 @@ class VNet(object):
         numpyImages = self.dataManagerTrain.getNumpyImages()
         numpyGT = self.dataManagerTrain.getNumpyGT()
 
-        #numpyImages['Case00.mhd']
-        #numpy images is a dictionary that you index in this way (with filenames)
 
         for key in numpyImages:
             mean = np.mean(numpyImages[key][numpyImages[key]>0])
@@ -175,7 +152,7 @@ class VNet(object):
             numpyImages[key]-=mean
             numpyImages[key]/=std
 
-        dataQueue = Queue(14) #max 50 images in queue
+        dataQueue = Queue(int(self.params['ModelParams']['TrainSize'])) #Change if memory is not enough for all dataset
         dataPreparation = [None] * self.params['ModelParams']['nProc']
 
         #thread creation
@@ -202,33 +179,25 @@ class VNet(object):
         for key in numpyImages:
             mean = np.mean(numpyImages[key][numpyImages[key]>0])
             std = np.std(numpyImages[key][numpyImages[key]>0])
-
             numpyImages[key] -= mean
             numpyImages[key] /= std
-            #import pdb; pdb.set_trace()
-
-        #for key in numpyGT:
-
-            #sio.savemat('/mnt/tmp/ssd1/VNet-isles/VNet_ISLES_MODI/Results/'+(str(key))+'GT'+'.mat', {'vect':numpyGT[key]})
 
         results = dict()
-        #pdb.set_trace()
-        #for key in numpyImages:
         nr_iter = self.params['ModelParams']['numIterations']
         batchsize = self.params['ModelParams']['batchsize']
 
         nr_iter_dataAug = nr_iter*batchsize
         np.random.seed()
-        whichDataList = np.random.randint(1,15, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
-        whichDataForMatchingList = np.random.randint(1,15, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
-        a1=np.arange(1,15)
+        whichDataList = np.random.randint(1,int(self.params['ModelParams']['TestSize'])+1, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
+        whichDataForMatchingList = np.random.randint(1,int(self.params['ModelParams']['TestSize'])+1, size=int(nr_iter_dataAug/self.params['ModelParams']['nProc']))
+        a1=np.arange(1,int(self.params['ModelParams']['TestSize'])+1)
 
         for key in a1:
             filename=str(key)
-            Key1 = str(key) + '_Flair' + '.nii'
-            Key2 = str(key) + '_T1' + '.nii'
-            Key3 = str(key) + '_DWI' + '.nii'
-            Key4 = str(key) + '_T2' + '.nii'
+            Key1 = str(key) + '_'+ self.params['ModelParams']['mod1'] + self.params['ModelParams']['format']
+            Key2 = str(key) + '_'+ self.params['ModelParams']['mod2'] + self.params['ModelParams']['format']
+            Key3 = str(key) + '_'+ self.params['ModelParams']['mod3'] + self.params['ModelParams']['format']
+            Key4 = str(key) + '_'+ self.params['ModelParams']['mod4'] + self.params['ModelParams']['format']
             btch = np.zeros((1, 4,numpyImages[Key1].shape[0],numpyImages[Key1].shape[1],numpyImages[Key1].shape[2]),dtype=float)
 
 
@@ -241,18 +210,9 @@ class VNet(object):
 
             out = net.forward()
 
-            #l1 = out["labelmap"]
+            l1 = out["labelmap"]
 
-            l=out["labelmapsf"]
+            labelmap1 = np.squeeze(l1[0,1,:,:,:])
+            results[key] = np.squeeze(labelmap1)
 
-            arr = np.zeros(shape=(1,1,2973696))
-            arr[0,0,:]=l[:,1,:]
-
-            #labelmap1 = np.squeeze(l1[0,1,:,:,:])
-            labelmap=l
-
-            results[key] = np.squeeze(labelmap)
-            #results[key] = np.squeeze(labelmap1)
-            sio.savemat('/mnt/tmp/ssd1/VNet-isles/VNet_ISLES_MODI/Results/'+(filename)+'.mat', {'vect':arr})
-
-            #self.dataManagerTest.writeResultsFromNumpyLabel(np.squeeze(labelmap1),Key1)
+            self.dataManagerTest.writeResultsFromNumpyLabel((labelmap1),Key1)
