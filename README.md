@@ -14,7 +14,7 @@ Programs and packages required to run our network:
 SimpleITK 
 Python2
 Caffe-3D
-CUDA with CudNN
+CUDA with cuDNN
 ```
 [SimpleITK installation](https://itk.org/Wiki/SimpleITK/GettingStarted#Build_It_Yourself) 
 [Caffe-3D repo](https://github.com/faustomilletari/3D-Caffe)
@@ -33,7 +33,7 @@ Volumetric Multimodality Neural Network
 │   DataManager.py  
 │   utilities.py  
 │   layers.py
-│   Vnet2.py    │
+│   Vnet2.py    
 └───Prototxt
 │   │   test_noPooling_ResNet_cinque2.prototxt
 │   │   train_noPooling_ResNet_cinque2.prototxt
@@ -50,33 +50,23 @@ Volumetric Multimodality Neural Network
 |   │   1_channel4.nii
 ```
 
-
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
+Where channel# are the differents modlaities (Example: Falir, DWI, T1, T1c,...)
+To run the network first set the training parameters in **main.py**. After seting paths to the files and training values run:
 ```
-Give an example
+python main.py -train
 ```
+The trained models will be saved on */Models/MRI_cinque_snapshots*
+**Note:** This process uses a lot of memory we recomend using a GPU. For that you must have installed and set up cuDNN.
+## Test Process
 
-### And coding style tests
-
-Explain what these tests test and why
-
+In order to train your model update the parameters in **main.py** to slect the last model or the iteration that want to be tested. After that only run:
 ```
-Give an example
+python main.py -test
 ```
-
+The output will be saved on the */Results* folder.
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+For additional information of how basic VNet architecture works look at this paper [VNet](https://arxiv.org/pdf/1606.04797v1.pdf) and the following tutorial [VNet tutorial](https://sagarhukkire.github.io/Vnet-Cafffe_Guide/)
 
 
 ## License
