@@ -1,6 +1,6 @@
 # Volumetric Multimodality Neural Network
  
-Adaptation V-Net architecture for brain lesion segmentation in medical images with 4 different MRI modalities.
+Adaptation of V-Net architecture for brain lesion segmentation in medical images with 4 different MRI modalities.
  
 ## Getting Started
  
